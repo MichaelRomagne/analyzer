@@ -1,0 +1,136 @@
+#!/bin/bash
+
+. /etc/init.d/functions
+. /usr/share/moogsoft-install/scripts/main.conf
+
+# add "bin" of every app to the path
+for app in mysql cassandra tomcat sphinx moogsoft
+do
+	export PATH=$PATH:$MOOG_APPS/$app/bin
+done
+
+#
+# List switching flags
+#
+
+SERVICE_LIST="my my_cassandra my_tomcat my_sphinx my_moomsd my_moogfarmd my_socketlamd"
+REVERSE_SERVICE_LIST="my_socketlamd my_moogfarmd my_moomsd my_sphinx my_tomcat my_cassandra my "
+
+
+#
+# Define cmd-line switches
+#
+args=`getopt -o srssih -l status,restart,stop,start,info,help -- "$@"`
+
+#
+# Exit if getopt returns non-zero 
+#
+if [ $? != 0 ] 
+then 
+      echo "usage: myservices [--stop|--start|--restart|--status|--info|--help]"
+	echo "Terminating..." >&2  
+	exit 1 
+fi
+
+
+eval set -- "$args"
+
+#
+# Process cmd-line switches
+#
+while true ; do
+  case "$1" in
+    --status)
+      OPTION=status
+      shift
+      ;;
+    --restart)
+      OPTION=restart
+      shift
+      ;;
+    --stop)
+      OPTION=stop
+      shift
+      ;;
+    --start)
+      OPTION=start
+      shift
+      ;;
+    --info)
+      OPTION=info
+      shift
+      ;;
+    --help)
+      echo "usage: moogservice [--stop|--start|--restart|--status|--info|--help]"
+      exit 0;
+      ;;
+    --)
+      shift; break ;;
+    *) 
+      echo "Usage: myservices [--stop|--start|--restart|--status|--info|--help]"
+      echo "ERROR - Unrecognized command-line option: $args" 1>&2
+      exit 1;
+      ;;
+  esac
+done
+
+eval set -- "$args"
+
+
+
+if [ "$OPTION" == "info" ]
+then
+	# name the package that service belongs to
+	for service in $SERVICE_LIST
+	do
+	
+		case $service in
+			my_moomsd)
+			packagelist="moogsoft"
+			;;
+			my_moogfarmd)
+				packagelist="moogsoft"
+			;;
+			my_socketlamd)
+				packagelist="moogsoft"
+			;;
+			my)
+				packagelist="mysql-libs mysql mysql-server"
+			;;
+			my_cassandra)
+				packagelist="apache-cassandra"
+			;;
+			my_tomcat)
+				packagelist="apache-tomcat"
+			;;
+			my_sphinx)
+				packagelist="sphinx"
+			;;
+			*)
+		esac
+	done
+
+	if [ "$service" = "my_moogfarmd" ] || [ "$service" = "my_socketlamd" ]; then
+		continue
+	fi
+	# show relocation paths
+	echo -e "\n"
+	for package in $packagelist
+	do
+		rpm -qi $package | grep -i relocation
+	done
+elif [ "$OPTION" == "start" ] || [ "$OPTION" == "status" ] || [ "$OPTION" == "restart" ]
+then
+	for service in $SERVICE_LIST
+	do
+		$service $OPTION
+		sleep 0.8
+	done
+elif [ "$OPTION" == "stop" ]
+then
+	for service in $REVERSE_SERVICE_LIST
+	do
+		$service $OPTION
+		sleep 0.8
+	done
+fi

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+. /etc/rc.d/init.d/functions
+#. /home/moogsoft/scripts/main.conf
+. /root/moo_scripts/main.conf
+
+
+
+APP_BIN=$MOOG_APPS/mysql/bin
+
+CURRENT_DIR=`pwd`
+
+cp $CURRENT_DIR/my $APP_BIN
+cp $CURRENT_DIR/mysql_install_db $APP_BIN
+cp $CURRENT_DIR/mysqld_safe $APP_BIN
+
+cp $CURRENT_DIR/my.cnf $MOOG_APPS/mysql
+
+action "Installing scripts .... " /bin/true

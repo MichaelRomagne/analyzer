@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# .  /home/moogsoft/scripts/main.conf
+. /root/moo_scripts/main.conf
+
+
+#	# moosoft repositories
+#	REPOSITORY=""http://172.16.252.3/x86_64"
+#	ALT_REPOSITORY=""http://speedy.moogsoft.com/PRM/centos/x86_64"
+#	
+#	# packages
+#	MY_LIBS="mysql-libs-5.5.31-1.el6.x86_64.rpm"
+#	MY_CLI="mysql-5.5.31-1.el6.x86_64.rpm"
+#	MY_SRV="mysql-server-5.5.31-1.el6.x86_64.rpm"
+#	
+#	# relocation - target direstories
+#	MOOG_INSTALL_ROOT="/usr/share/r_moogsoft
+#	MOOG_SHARE="$INSTALL_ROOT/share
+#	MOOG_ETC="$INSTALL_ROOT/share/etc
+#	MOOG_DOC="$INSTALL_ROOT/share/doc
+#	MOOG_MAN="$INSTALL_ROOT/share/man
+#	MOOG_RUN="$INSTALL_ROOT/share/run
+#	MOOG_LOCK="$INSTALL_ROOT/share/lock
+#	MOOG_APPS="$INSTALL_ROOT/apps
+#	MOOG_DATA="$INSTALL_ROOT/data
+#	MOOG_LOG="$DATA/log
+#	MOOG_DB="$DATA/db
+
+echo -e "MOOG_INSTALL_ROOT=/usr/share/r_moogsoft"
+echo -e "MOOG_SHARE=$MOOG_INSTALL_ROOT/share"
+echo -e "MOOG_ETC=$MOOG_INSTALL_ROOT/share/etc"
+echo -e "MOOG_DOC=$MOOG_INSTALL_ROOT/share/doc"
+echo -e "MOOG_MAN=$MOOG_INSTALL_ROOT/share/man"
+echo -e "MOOG_RUN=$MOOG_INSTALL_ROOT/share/run"
+echo -e "MOOG_LOCK=$MOOG_INSTALL_ROOT/share/lock"
+echo -e "MOOG_APPS=$MOOG_INSTALL_ROOT/apps"
+echo -e "MOOG_DATA=$MOOG_INSTALL_ROOT/data"
+echo -e "MOOG_LOG=$MOOG_DATA/log"
+echo -e "MOOG_DB=$MOOG_DATA/db"
+
+## mysql-libs ##
+rpm -ivh \
+	--relocate /etc=$MOOG_ETC \
+	--relocate /usr/share/doc=$MOOG_DOC \
+	--relocate /usr/share/man=$MOOG_MAN \
+	--relocate /usr/lib64/mysql=$MOOG_APPS/mysql/lib64 \
+	--relocate /usr/share/mysql=$MOOG_APPS/mysql/language \
+	$MOOG_REPOSITORY/$MOOG_MY_LIBS
+
+## mysql-client ##
+rpm -ivh \
+	--relocate /usr/bin=$MOOG_APPS/mysql/bin \
+	--relocate /usr/lib64/mysql=$MOOG_APPS/mysql/lib64 \
+	--relocate /usr/share/doc=$MOOG_DOC \
+	--relocate /usr/share/man=$MOOG_MAN \
+	$MOOG_REPOSITORY/$MOOG_MY_CLI
+
+## mysql-server ##
+rpm -ivh --nodeps\
+	--relocate /etc=$MOOG_ETC \
+	--relocate /etc/logrotate.d=$MOOG_ETC/logrotate.d \
+	--relocate /etc/rc.d/init.d=$MOOG_ETC/init.d \
+	--relocate /usr/bin=$MOOG_APPS/mysql/bin \
+	--relocate /usr/libexec=$MOOG_APPS/mysql/bin \
+	--relocate /usr/lib64/mysql=$MOOG_APPS/mysql/lib64 \
+	--relocate /usr/share=$MOOG_APPS \
+	--relocate /usr/share/doc=$MOOG_DOC \
+	--relocate /usr/share/man=$MOOG_MAN \
+	--relocate /var/run=$MOOG_RUN \
+	--relocate /var/log=$MOOG_LOG \
+	--relocate /var/lib=$MOOG_DB \
+	$MOOG_REPOSITORY/$MOOG_MY_SRV
+
+chown -R moogsoft:moogsoft $MOOG_INSTALL_ROOT

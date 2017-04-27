@@ -1,0 +1,138 @@
+#!/bin/sh
+#############################################################
+#                                                           #
+#  SCCS: %M%    %I%     %E%                                 #
+#                                                           #
+#############################################################
+#############################################################
+#                                                           #
+#  Contents of file Copyright (c) Moogsoft Inc 2010/2011    #
+#                                                           #
+#-----------------------------------------------------------#
+#-----------------------------------------------------------#
+#  WARNING:                                                 #
+#  THIS FILE CONTAINS UNPUBLISHED PROPRIETARY               #
+#  SOURCE CODE WHICH IS THE PROPERTY OF MOOGSOFT AND        #
+#  WHOLLY OWNED SUBSIDIARY COMPANIES.                       #
+#  PLEASE READ THE FOLLOWING AND TAKE CAREFUL NOTE:         #
+#                                                           #
+#  This source code is confidential and any person who      #
+#  receives a copy of it, or believes that they are viewing #
+#  it without permission is asked to notify Phil Tee        #
+#  on 07734 591962 or email to phil@moogsoft.com.           #
+#  All intellectual property rights in this source code     #
+#  are owned by Moogsoft.  No part of this source code      #
+#  may be reproduced, adapted or transmitted in any form or #
+#  by any means, electronic, mechanical, photocopying,      #
+#  recording or otherwise.                                  #
+#                                                           *
+#  You have been warned....so be good for goodness sake...  #
+#                                                           #
+#-----------------------------------------------------------#
+#                                                           #
+#                                                           #
+#############################################################
+#
+#! \brief
+#!
+#! DESCRIPTION:\n
+#! Creates a headed source file..
+#!
+#! FEATURES:\n
+#!
+#! IMPLEMENTATION DECISIONS:\n
+#!
+#! AUTHOR: Phil Tee
+#!
+
+#
+# Belt and braces - don't overwrite
+#
+if [ -f $1 ] ; then
+	echo 'File $1 exists, exiting';
+	exit
+fi
+
+#
+# Set the umask
+#
+umask 113
+
+#
+# Not necessary but extract the filename from an
+# absolute pathname
+#
+i=`basename $1`
+
+#
+# In this simplified version of the ns command, the file is a s spec'd
+# on the command line.
+#
+source_file=$1
+local_dir=`pwd`
+
+
+#
+# Dependent upon which extension is
+# used the appropriate copyright file is
+# copied to the given name
+#
+case $i in
+*.c)
+		cp $MOOGSOFT_SRC_HOME/src-utils/copyright/copyright.src $source_file
+		;;
+*.cc)
+		cp $MOOGSOFT_SRC_HOME/src-utils/copyright/copyright.src $source_file
+		;;
+*.m)
+		cp $MOOGSOFT_SRC_HOME/src-utils/copyright/copyright.src $source_file
+		;;
+*.java)
+		cp $MOOGSOFT_SRC_HOME/src-utils/copyright/copyright.src $source_file
+		;;
+*.js)
+		cp $MOOGSOFT_SRC_HOME/src-utils/copyright/copyright.src $source_file
+		;;
+*.y)
+		cp $MOOGSOFT_SRC_HOME/src-utils/copyright/copyright.src $source_file
+		;;
+*.l)
+		cp $MOOGSOFT_SRC_HOME/src-utils/copyright/copyright.src $source_file
+		;;
+*.h)
+		cp $MOOGSOFT_SRC_HOME/src-utils/copyright/copyright.src $source_file
+		;;
+*.sh)
+		cp $MOOGSOFT_SRC_HOME/src-utils/copyright/copyright.shell $source_file
+		;;
+*.csh)
+		cp $MOOGSOFT_SRC_HOME/src-utils/copyright/copyright.shell $source_file
+		;;
+*.perl)
+		cp $MOOGSOFT_SRC_HOME/src-utils/copyright/copyright.shell $source_file
+		;;
+*.sql)
+		cp $MOOGSOFT_SRC_HOME/src-utils/copyright/copyright.shell $source_file
+		;;
+*.local)
+		cp $MOOGSOFT_SRC_HOME/src-utils/copyright/copyright.shell $source_file
+		;;
+*.html)
+		cp $MOOGSOFT_SRC_HOME/src-utils/copyright/copyright.html $source_file
+		;;
+*.php)
+		cp $MOOGSOFT_SRC_HOME/src-utils/copyright/copyright.php $source_file
+		;;
+*.css)
+		cp $MOOGSOFT_SRC_HOME/src-utils/copyright/copyright.src $source_file
+		;;
+*)
+		echo "Unrecognised extension usage ns *.[c|c++|java|m|y|l|sh|csh|perl]"
+		;;
+esac
+
+chmod 664 $source_file
+
+
+
+

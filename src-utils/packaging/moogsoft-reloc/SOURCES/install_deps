@@ -1,0 +1,136 @@
+#!/bin/bash
+
+ .  /usr/share/moogsoft-install/scripts/main.conf
+
+
+
+#	# moosoft repositories
+#	
+#	# packages
+#	MY_LIBS="mysql-libs-5.5.31-1.el6.x86_64.rpm"
+#	MY_CLI="mysql-5.5.31-1.el6.x86_64.rpm"
+#	MY_SRV="mysql-server-5.5.31-1.el6.x86_64.rpm"
+#	
+#	# relocation - target direstories
+#	MOOG_INSTALL_ROOT="/usr/share/moogsoft-install
+#	MOOG_SHARE="$INSTALL_ROOT/share
+#	MOOG_ETC="$INSTALL_ROOT/share/etc
+#	MOOG_DOC="$INSTALL_ROOT/share/doc
+#	MOOG_MAN="$INSTALL_ROOT/share/man
+#	MOOG_RUN="$INSTALL_ROOT/share/run
+#	MOOG_LOCK="$INSTALL_ROOT/share/lock
+#	MOOG_APPS="$INSTALL_ROOT/apps
+#	MOOG_DATA="$INSTALL_ROOT/data
+#	MOOG_LOG="$DATA/log
+#	MOOG_DB="$DATA/db
+
+DEBUG=true
+
+if [ $DEBUG ]
+	then
+	echo -e "\n\nMoogsoft File System Structure & Configuration:"
+	echo -e "\tMOOG_INSTALL_ROOT=/usr/share/moogsoft-install"
+	echo -e "\tMOOG_SHARE=$MOOG_INSTALL_ROOT/share"
+	echo -e "\tMOOG_ETC=$MOOG_INSTALL_ROOT/share/etc"
+	echo -e "\tMOOG_DOC=$MOOG_INSTALL_ROOT/share/doc"
+	echo -e "\tMOOG_MAN=$MOOG_INSTALL_ROOT/share/man"
+	echo -e "\tMOOG_RUN=$MOOG_INSTALL_ROOT/share/run"
+	echo -e "\tMOOG_LOCK=$MOOG_INSTALL_ROOT/share/lock"
+	echo -e "\tMOOG_APPS=$MOOG_INSTALL_ROOT/apps"
+	echo -e "\tMOOG_DATA=$MOOG_INSTALL_ROOT/data"
+	echo -e "\tMOOG_LOG=$MOOG_DATA/log"
+	echo -e "\tMOOG_DB=$MOOG_DATA/db"
+	echo -e "\n"
+fi
+## mysql-libs ##
+rpm -ivh \
+	--relocate /etc=$MOOG_ETC \
+	--relocate /usr/share/doc=$MOOG_DOC \
+	--relocate /usr/share/man=$MOOG_MAN \
+	--relocate /usr/lib64/mysql=$MOOG_APPS/mysql/lib64 \
+	--relocate /usr/share/mysql=$MOOG_APPS/mysql/language \
+	$MOOG_REPOSITORY_x86/$MOOG_MY_LIBS
+
+## mysql-client ##
+rpm -ivh \
+	--relocate /usr/bin=$MOOG_APPS/mysql/bin \
+	--relocate /usr/lib64/mysql=$MOOG_APPS/mysql/lib64 \
+	--relocate /usr/share/doc=$MOOG_DOC \
+	--relocate /usr/share/man=$MOOG_MAN \
+	$MOOG_REPOSITORY_x86/$MOOG_MY_CLI
+
+## mysql-server ##
+rpm -ivh --nodeps\
+	--relocate /etc=$MOOG_ETC \
+	--relocate /etc/logrotate.d=$MOOG_ETC/logrotate.d \
+	--relocate /etc/rc.d/init.d=$MOOG_ETC/init.d \
+	--relocate /usr/bin=$MOOG_APPS/mysql/bin \
+	--relocate /usr/libexec=$MOOG_APPS/mysql/bin \
+	--relocate /usr/lib64/mysql=$MOOG_APPS/mysql/lib64 \
+	--relocate /usr/share=$MOOG_APPS \
+	--relocate /usr/share/doc=$MOOG_DOC \
+	--relocate /usr/share/man=$MOOG_MAN \
+	--relocate /var/run=$MOOG_RUN \
+	--relocate /var/log=$MOOG_LOG \
+	--relocate /var/lib=$MOOG_DB \
+	$MOOG_REPOSITORY_x86/$MOOG_MY_SRV
+
+
+## apache-cassandra ##
+
+rpm -ivh \
+	--relocate /etc=$MOOG_ETC \
+	--relocate /usr/share=$MOOG_APPS \
+	--relocate /etc/rc.d=$MOOG_ETC/init.d \
+	--relocate /var/run=$MOOG_RUN \
+	--relocate /var/log=$MOOG_LOG \
+	--relocate /var/lib=$MOOG_DB \
+	--relocate /usr/bin=$MOOG_APPS/cassandra/bin \
+	--relocate /usr/sbin=$MOOG_APPS/cassandra/bin \
+	$MOOG_REPOSITORY_noarch/$MOOG_CASSANDRA
+
+
+## apache-tomcat ##
+
+rpm -ivh \
+	--relocate /etc=$MOOG_ETC \
+	--relocate /usr/share=$MOOG_APPS \
+	--relocate /var/run=$MOOG_RUN \
+	--relocate /usr/share/tomcat/logs=$MOOG_LOG/tomcat \
+	$MOOG_REPOSITORY_x86/$MOOG_TOMCAT
+
+
+## sphinx ##
+
+rpm -ivh \
+        --relocate /etc/logrotate.d=$MOOG_ETC/logrotate.d \
+        --relocate /etc/rc.d/init.d=$MOOG_ETC/init.d \
+        --relocate /etc/sphinx=$MOOG_ETC/sphinx \
+	--relocate /usr/bin=$MOOG_APPS/sphinx/bin \
+	--relocate /var/run=$MOOG_RUN \
+	--relocate /var/log=$MOOG_LOG \
+	--relocate /var/lib=$MOOG_DB \
+	--relocate /usr/share/doc=$MOOG_DOC \
+	--relocate /usr/share/man=$MOOG_MAN \
+	$MOOG_REPOSITORY_x86/$MOOG_SPHINX
+
+## moogsoft ##
+rpm  -ivh \
+	--relocate /usr/share=$MOOG_APPS \
+        --relocate /etc=$MOOG_ETC \
+	--relocate /var/run=$MOOG_RUN \
+	--relocate /var/log=$MOOG_LOG \
+	--relocate /var/lib=$MOOG_DB \
+	$MOOG_REPOSITORY_x86/$MOOG_SYSTEM
+
+## scripts ##
+
+# startup-scripts installation is to be replaced with "moogsoft-reloc-scripts" 
+# package, meanwhile we need to start from somewhere
+if [ ! -d $MOOG_SCRIPTS ]
+then
+	mkdir $MOOG_SCRIPTS 
+fi
+
+# transfer of the scripts needs to occure here
+chown -R moogsoft:moogsoft $MOOG_INSTALL_ROOT

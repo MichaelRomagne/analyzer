@@ -1,0 +1,78 @@
+# .bashrc
+
+# User specific aliases and functions
+
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+	. /etc/bashrc
+fi
+
+##########################################################################
+#   CLASSPATH -- A Java classpath containing everything necessary to run.
+#   JVM_OPTS -- Additional arguments to the JVM for heap size, etc
+#   CASSANDRA_CONF -- Directory containing Cassandra configuration files.
+#   CASSANDRA_INCLUDE=/path/to/in.sh cassandra -p /var/run/cass.pid
+##########################################################################
+
+
+## OpenJDK & SunJAVA ##
+export JAVA_HOME=/usr/java/latest
+
+
+## moogsoft installroot ##
+export MOOG_INSTALL_ROOT=/usr/share/moogsoft-install
+export MOOG_APPS=$MOOG_INSTALL_ROOT/apps
+export MOOG_DATA=$MOOG_INSTALL_ROOT/data
+export MOOG_SHARE=$MOOG_INSTALL_ROOT/share
+
+## moogsoft ##
+export MOOGSOFT_HOME=$MOOG_APPS/moogsoft
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$MOOGSOFT_HOME/lib:/usr/GNUstep/System/Library/Libraries
+export PATH=$PATH:$MOOGSOFT_HOME/bin
+
+## MySQL ##
+export MYSQL_HOME=$MOOG_APPS/mysql
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$MYSQL_HOME/lib64
+export PATH=$PATH:$MYSQL_HOME/bin
+
+## tomcat ##
+export APPSERVER_HOME=$MOOG_APPS/tomcat
+export PATH=$PATH:$APPSERVER_HOME/bin
+
+
+## cassandra ##
+export CASSANDRA_HOME=$MOOG_APPS/cassandra
+export CASSANDRA_CONF=$MOOG_INSTALL_ROOT/share/etc/cassandra/default.conf
+export CASSANDRA_INCLUDE=
+if [ -n "$CLASSPATH" ]; then
+    CLASSPATH=$CLASSPATH:$CASSANDRA_CONF
+else
+    CLASSPATH=$CASSANDRA_CONF
+fi
+
+
+for jar in $CASSANDRA_HOME/lib/*.jar; do
+    CLASSPATH=$CLASSPATH:$jar
+done
+
+export PATH=$PATH:$CASSANDRA_HOME/bin
+
+## sphinx# ##
+export SPHINX_HOME=$MOOG_APPS/sphinx
+export PATH=$PATH:$SPHINX_HOME/bin
+
+##########################################################################
+
+## Oracle Instant Client ##
+export ORACLE_HOME=/usr/lib64/oracle/11.2/client64
+export PATH=$PATH:$ORACLE_HOME/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ORACLE_HOME/lib
+# export ORACLE_USERID="user/password@tns_entry_name"
+
+## http-proxy ##
+export http_proxy=http://sso_unixeng:UNIXw3b0@inet-proxy-b.appl.swissbank.com:8080/
+

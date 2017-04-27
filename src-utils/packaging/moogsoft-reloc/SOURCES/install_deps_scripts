@@ -1,0 +1,39 @@
+#!/bin/bash
+
+. /etc/rc.d/init.d/functions
+#. /home/moogsoft/scripts/main.conf
+. /usr/share/moogsoft-install/scripts/main.conf
+
+
+## mysql ##
+cp $MOOG_SCRIPTS/mysql/my.cnf $MOOG_APPS/mysql
+cp $MOOG_SCRIPTS/mysql/my $MOOG_APPS/mysql/bin
+cp $MOOG_SCRIPTS/mysql/mysql_install_db $MOOG_APPS/mysql/bin
+cp $MOOG_SCRIPTS/mysql/mysqld_safe $MOOG_APPS/mysql/bin
+action "Installing MySQL relocation startup scripts .... " /bin/true
+
+## cassandra ##
+cp $MOOG_SCRIPTS/cassandra/my_cassandra $MOOG_APPS/cassandra/bin
+action "Installing ApacheCassandra relocation startup script .... " /bin/true
+
+cp $MOOG_SCRIPTS/cassandra/cassandra.in.sh $MOOG_APPS/cassandra/etc/default.conf
+cp $MOOG_SCRIPTS/cassandra/cassandra.yaml $MOOG_APPS/cassandra/etc/default.conf
+cp $MOOG_SCRIPTS/cassandra/log4j-server.properties $MOOG_APPS/cassandra/etc/default.conf
+action "Installing ApacheCassandra default configs .... " /bin/true
+
+## tomcat ##
+cp $MOOG_SCRIPTS/tomcat/my_tomcat $MOOG_APPS/tomcat/bin
+cp $MOOG_SCRIPTS/tomcat/setenv.sh $MOOG_APPS/tomcat/bin
+action "Installing ApacheTomcat relocation startup scripts .... " /bin/true
+
+## sphinx ##
+cp $MOOG_SCRIPTS/sphinx/my_sphinx $MOOG_APPS/sphinx/bin
+cp $MOOG_SCRIPTS/sphinx/sphinx.conf $MOOG_ETC/sphinx
+action "Installing Sphinx relocation startup scripts .... " /bin/true
+
+## moogsoft ##
+cp $MOOG_SCRIPTS/moogsoft/my_moomsd $MOOG_APPS/moogsoft/bin
+cp $MOOG_SCRIPTS/moogsoft/my_moogfarmd $MOOG_APPS/moogsoft/bin
+cp $MOOG_SCRIPTS/moogsoft/my_socketlamd $MOOG_APPS/moogsoft/bin
+cp $MOOG_SCRIPTS/moogsoft/my_socket_lam.conf $MOOG_APPS/moogsoft/config/socket_lam.conf
+action "Installing Moogsoft relocation  startup scripts .... " /bin/true

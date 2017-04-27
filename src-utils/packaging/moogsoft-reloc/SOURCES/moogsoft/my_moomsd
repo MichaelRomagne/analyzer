@@ -1,0 +1,189 @@
+#!/bin/sh
+#
+#############################################################
+#                                                           #
+#  Contents of file Copyright (c) Moogsoft Inc 2010         #
+#                                                           #
+#-----------------------------------------------------------#
+#                                                           #
+#  WARNING:                                                 #
+#  THIS FILE CONTAINS UNPUBLISHED PROPRIETARY               #
+#  SOURCE CODE WHICH IS THE PROPERTY OF MOOGSOFT INC AND    #
+#  WHOLLY OWNED SUBSIDIARY COMPANIES.                       #
+#  PLEASE READ THE FOLLOWING AND TAKE CAREFUL NOTE:         #
+#                                                           #
+#  This source code is confidential and any person who      #
+#  receives a copy of it, or believes that they are viewing #
+#  it without permission is asked to notify Phil Tee        #
+#  on 07734 591962 or email to phil@moogsoft.com.           #
+#  All intellectual property rights in this source code     #
+#  are owned by Moogsoft Inc.  No part of this source code  #
+#  may be reproduced, adapted or transmitted in any form or #
+#  by any means, electronic, mechanical, photocopying,      #
+#  recording or otherwise.                                  #
+#                                                           *
+#  You have been warned....so be good for goodness sake...  #
+#                                                           #
+#############################################################
+
+
+#############################################################
+# Source function library                                   #
+#############################################################
+
+. /etc/rc.d/init.d/functions
+. /usr/share/r_moogsoft/scripts/main.conf
+
+
+##############################################################
+# Environment variables (normally these are modifed for a    #
+# new service instance)                                      # 
+##############################################################
+
+##############################################################
+# SERVICE_NAME:                                              #
+# A unique name for this service.                            #
+##############################################################
+
+SERVICE_NAME=moomsd
+
+##############################################################
+# PROCESS_HOME:                                              #
+# Home directory for the process.                            #
+# Will be used to set $MOOGSOFT_HOME.                        #
+##############################################################
+
+PROCESS_HOME=$MOOG_APPS/moogsoft
+
+##############################################################
+# PROCESS_NAME:                                              #
+# Name of the process to be run.                             #
+# $PROCESS_HOME/$PROCESS_NAME should point to the exact file #
+# to be run                                                  #
+##############################################################
+
+PROCESS_NAME=bin/moomsd
+
+##############################################################
+# PROCESS_OWNER:                                             #
+# The name of the user that will run the process             #
+#                                                            #
+# NOTE: Permission may need to be set up for certain         #
+# directories e.g. /var/run/moogsoft or /var/log/moogsoft    #
+#                                                            #
+##############################################################
+
+PROCESS_OWNER=moogsoft
+
+##############################################################
+# PID_FILE:                                                  #
+# The name and location of the pid file to track the running #
+# process                                                    #
+##############################################################
+
+PID_FILE=$MOOG_RUN/moogsoft/$SERVICE_NAME.pid
+
+##############################################################
+# LOG_FILE:                                                  #
+# The name and location of the log file used to store any    #
+# stdout and stderr                                          #
+##############################################################
+
+LOG_FILE=$MOOG_LOG/moogsoft/$SERVICE_NAME.log
+
+##############################################################
+# CONFIG_FILE:                                               #
+# The name and location of a config file to be used by the   #
+# running process                                            #
+##############################################################
+
+CONFIG_FILE=$PROCESS_HOME/config/moomsd.conf
+
+##############################################################
+# LOG_LEVEL:                                                 #
+# The log level to run the process                           #
+##############################################################
+
+LOG_LEVEL=WARN
+
+##############################################################
+# Environment variables (normally these are not modified)    #
+##############################################################
+
+#############################################################
+# Set up LD_LIBRARY_PATH, MOOGSOFT_HOME and JAVA_HOME       #
+# NOTE: Need to be explicitly exported to make them         #
+# available to the moogsoft processes.                      #
+#############################################################
+
+export LD_LIBRARY_PATH=$PROCESS_HOME/lib:/usr/GNUstep/Local/Library/Libraries:/usr/GNUstep/System/Library/Libraries:$MYSQL_HOME/lib64
+export MOOGSOFT_HOME=$PROCESS_HOME
+export JAVA_HOME=/usr/java/jdk1.8.0_20
+
+##############################################################
+# RETVAL:                                                    #
+# The default return value of this init.d script             #
+##############################################################
+
+RETVAL=0
+
+##############################################################
+# MOOG_WRAPPER:                                              #
+# The name of the moog_wrapper script.                       #
+# This script provides several functions required by the     #
+# init.d/functions daemon function.                          #
+##############################################################
+
+MOOG_WRAPPER=$PROCESS_HOME/scripts/moog_wrapper.sh
+
+##############################################################
+# Local Functions                                            #
+##############################################################
+
+start() {
+	echo -n $"Starting $SERVICE_NAME (`date`):"
+        if [[ `whoami` == $PROCESS_OWNER ]]
+            then
+                daemon --pidfile=$PID_FILE $MOOG_WRAPPER --home=$PROCESS_HOME --process=$PROCESS_NAME --config=$CONFIG_FILE --logfile=$LOG_FILE --pidfile=$PID_FILE --loglevel=$LOG_LEVEL
+            else
+                if [ $PROCESS_OWNER == "root" ] && [ $EUID -ne 0 ]; then
+                    echo "This script must be run as root" 1>&2
+                    exit 1
+                fi
+                daemon --pidfile=$PID_FILE --user=$PROCESS_OWNER $MOOG_WRAPPER --home=$PROCESS_HOME --process=$PROCESS_NAME --config=$CONFIG_FILE --logfile=$LOG_FILE --pidfile=$PID_FILE --loglevel=$LOG_LEVEL
+        fi
+        RETVAL=$?
+        echo
+}
+
+stop() {	
+	echo -n $"Stopping $SERVICE_NAME:"
+    killproc -p $PID_FILE $SERVICE_NAME
+	RETVAL=$?
+	echo
+}
+
+##############################################################
+# Main init.d case logic                                     #
+##############################################################
+
+case "$1" in	
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	reload|restart)
+		stop
+		start
+		;;
+	status)
+		status -p $PID_FILE $SERVICE_NAME
+		RETVAL=$?
+		;;
+	*)	
+		echo $"Usage: $0 {start|stop|status|restart|reload}"
+		RETVAL=1
+esac
+exit $RETVAL

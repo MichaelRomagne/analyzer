@@ -1,0 +1,88 @@
+#!/bin/bash
+#
+# /etc/init.d/cassandra
+#
+# Startup script for Cassandra
+# 
+. /etc/rc.d/init.d/functions
+. /usr/share/r_moogsoft/share/scripts/main.conf
+
+
+######################### OpenJDK & SunJAVA ###########################
+# run alternatives --config java to see what is your current java
+#######################################################################
+export JAVA_HOME=/usr/java/latest
+export JAVA="$JAVA_HOME/bin/java"
+
+######################### Cassandra Special ###########################
+# CLASSPATH -- A Java classpath containing everything necessary to run.
+# JVM_OPTS -- Additional arguments to the JVM for heap size, etc
+# CASSANDRA_CONF -- /path/to/cassandra/default.conf directory.
+# CASSANDRA_INCLUDE -- /path/to/in.sh cassandra -p /var/run/cass.pid
+#######################################################################
+
+# CASSANDRA_HOME also defined in $CASSANDRA_CONF/cassandra.in.sh
+export CASSANDRA_HOME=$MOOG_APPS/cassandra
+
+# sets the ownership of cassandra process
+export CASSANDRA_OWNR=moogsoft
+
+NAME="cassandra"
+
+# "master" startup script 
+CASSANDRA_PROG=$CASSANDRA_HOME/bin/cassandra
+
+# logfile for the startup scripts
+log_file=$MOOG_LOG/cassandra/cassandra.log
+
+# PIDfile for the "service" control
+pid_file=$MOOG_RUN/cassandra/cassandra.pid
+
+
+# main conf directory with: cassandra.in.sh, cassandra.yml,log4j-server ...
+# this is where we copy all "overlay" conf files
+export CASSANDRA_CONF=$CASSANDRA_HOME/etc/default.conf
+
+# this is dir to put extra conf files, if any
+export CASSANDRA_INCLUDE=
+
+# The java classpath (required)
+if [ -n "$CLASSPATH" ]; then
+    CLASSPATH=$CLASSPATH:$CASSANDRA_CONF
+else
+    CLASSPATH=$CASSANDRA_CONF
+fi
+
+
+# include every jar in classpath
+for jar in $CASSANDRA_HOME/lib/*.jar; do
+    CLASSPATH=$CLASSPATH:$jar
+done
+
+
+# kick-arse
+case "$1" in
+    start)
+        # Cassandra startup
+        action $"Starting cassandra: " `su $CASSANDRA_OWNR -c "$CASSANDRA_PROG -p $pid_file" > $log_file` 
+        ;;
+    stop)
+        # Cassandra shutdown
+        action $"Stopping cassandra: " su $CASSANDRA_OWNR -c "kill `cat $pid_file`"
+        ;;
+    reload|restart)
+        $0 stop
+	# Must allow at least 3sec "cooling-down" period for cassandra
+	sleep 3
+        $0 start
+        ;;
+    status)
+        status -p $pid_file cassandra
+        ;;
+    *)
+        echo "Usage: `basename $0` start|stop|status|restart|reload"
+        exit 1
+esac
+
+exit 0
+
